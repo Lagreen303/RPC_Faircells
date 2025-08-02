@@ -1,6 +1,5 @@
-# Single-Cell RNA Sequencing Model Comparison
-
-This repository contains a comprehensive analysis comparing different machine learning models for single-cell RNA sequencing (scRNA-seq) data analysis, specifically focusing on cell type classification and clustering performance.
+# Fairness Evaluation of Single-Cell Foundation Models
+This repository contains scripts for evaluating fairness in single-cell foundation models. The project compares two transformer-based models—Geneformer and scGPT—with a conventional Highly Variable Gene (HVG) baseline across multiple immune-focused single-cell datasets. The study investigates whether these models encode or amplify bias across protected attributes (age, sex, ethnicity, disease status) and introduces a novel latent space fairness metric.
 
 ## Overview
 
@@ -12,11 +11,11 @@ The project evaluates and compares three different approaches for scRNA-seq data
 ## Datasets
 
 The analysis is performed on multiple scRNA-seq datasets:
-- **Ahern_covid_UK**: COVID-19 related dataset with major subset annotations
-- **Green_BCL**: B-cell lymphoma dataset with author-defined cell types
-- **Kock_AIDAv2**: AIDA v2 dataset with level 1 annotations
-- **Perez_lupus**: Lupus dataset with author-defined cell types
-- **Tabula_immune**: Immune cell dataset with broad cell class annotations
+- **Ahern_covid_UK**: COVID-19 related dataset
+- **Green_BCL**: B-cell lymphoma dataset
+- **Kock_AIDAv2**: AIDA v2 dataset 
+- **Perez_lupus**: Lupus dataset
+- **Tabula_immune**: Immune cell dataset
 
 ## Project Structure
 
@@ -107,4 +106,5 @@ The analysis generates:
 - **UMAP Coordinates**: 2D UMAP projections for visualization
 - **Performance Metrics**: Quantitative evaluation of model performance
 - **Visualizations**: High-quality plots for publication and presentation
+
 
