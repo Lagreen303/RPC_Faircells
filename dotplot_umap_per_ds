@@ -1,0 +1,140 @@
+import os
+import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
+import matplotlib.colors as mcolors
+import numpy as np
+
+# Paths
+stats_path = "/iridisfs/ddnb/faircells/AI_hackathon25/summary_umap_group_stats.csv"
+baseline_path = "/iridisfs/ddnb/faircells/AI_hackathon25/summary_umap_baseline_distances.csv"
+out_dir = "/iridisfs/ddnb/faircells/AI_hackathon25/plots/umap_median_dotplots_per_dataset/"
+os.makedirs(out_dir, exist_ok=True)
+
+# Load data
+stats_df = pd.read_csv(stats_path)
+baseline_df = pd.read_csv(baseline_path)
+
+# Harmonize groupby labels
+stats_df["groupby"] = stats_df["groupby"].replace({
+    "Age_quartile": "age",
+    "development_stage_quartile": "age",
+    "self_reported_ethnicity": "ethnicity"
+})
+stats_df["group"] = stats_df["group"].astype(str).str.strip()
+stats_df["groupby"] = stats_df["groupby"].astype(str).str.strip()
+baseline_df = baseline_df.rename(columns={"median_distance": "baseline_median"})
+
+# Average duplicates
+agg_cols = ["median_distance", "n_cells"]
+group_cols = ["dataset", "groupby", "group", "model"]
+stats_df = stats_df.groupby(group_cols, as_index=False)[agg_cols].mean()
+
+# Merge with baseline per dataset + model
+merged = pd.merge(
+    stats_df,
+    baseline_df[["dataset", "model", "baseline_median"]],
+    on=["dataset", "model"],
+    how="left"
+)
+merged["delta_median"] = merged["median_distance"] - merged["baseline_median"]
+
+# Sorting logic
+age_order = ["<29", "<30", "<41", "29-34", "30-38", "35-50", "39-47",
+             "41-50", "51-70", "<56", "56-58", "59-59", ">=48", ">=51", ">=60", ">=71"]
+ethnicity_priority = {
+    "european": 0,
+    "indian": 1, "pakistani": 1, "bangladeshi": 1, "singaporean indian": 1,
+    "asian": 2, "chinese": 2, "japanese": 2, "korean": 2, "thai": 2,
+    "singaporean chinese": 2, "singaporean malay": 2,
+    "african american": 3, "african american or afro-caribbean": 3, "black": 3,
+    "hispanic or latin american": 4, "hispanic": 4, "latin": 4, "latino": 4
+}
+sex_priority = {"male": 0, "female": 1}
+
+def sort_key(group, groupby):
+    group = group.lower()
+    if groupby == "age":
+        try:
+            return age_order.index(group)
+        except:
+            return len(age_order) + 1
+    elif groupby == "sex":
+        return sex_priority.get(group, 2)
+    elif groupby == "ethnicity":
+        for k, v in ethnicity_priority.items():
+            if k in group:
+                return v
+        return 5
+    elif groupby == "disease":
+        return 0 if "normal" in group else 1
+    return 99
+
+# Main processing loop (collect all dataframes)
+all_dfs = []
+for dataset in sorted(merged["dataset"].unique()):
+    dataset_df = merged[merged["dataset"] == dataset].copy()
+    all_rows = []
+
+    for groupby in ["age", "sex", "disease", "ethnicity"]:
+        subset = dataset_df[dataset_df["groupby"] == groupby].copy()
+
+        # Skip if only 1 valid group
+        subset = subset[subset["group"].notna() & (subset["group"].str.lower() != "nan")]
+        if subset["group"].nunique() <= 1:
+            continue
+
+        subset["group_sort"] = subset["group"].apply(lambda g: sort_key(g, groupby))
+        subset["group"] = pd.Categorical(subset["group"], ordered=True)
+        subset["groupby_label"] = groupby.capitalize()
+        subset["label"] = subset["groupby_label"] + ": " + subset["group"].astype(str)
+        all_rows.append(subset)
+
+    if not all_rows:
+        continue
+
+    plot_df = pd.concat(all_rows, axis=0)
+    plot_df["label"] = plot_df["label"].astype(str)
+    plot_df["sort_order"] = plot_df["groupby_label"] + plot_df["group"].astype(str)
+    plot_df = plot_df.sort_values(["groupby_label", "group_sort"])
+    label_order = plot_df["label"].unique().tolist()
+    plot_df["label"] = pd.Categorical(plot_df["label"], categories=label_order, ordered=True)
+
+    all_dfs.append(plot_df)
+
+    # Plot
+    plt.figure(figsize=(10, max(6, len(label_order) * 0.35)))
+    ax = sns.scatterplot(
+        data=plot_df,
+        x="model", y="label",
+        hue="delta_median",
+        size="n_cells", sizes=(30, 300),
+        palette=sns.color_palette("coolwarm_r", as_cmap=True),
+        hue_norm=mcolors.TwoSlopeNorm(vmin=-3, vcenter=0, vmax=3),
+        legend="brief"
+    )
+
+    plt.title(f"{dataset} • Δ Median UMAP Distance from Baseline\nDot size = n_cells")
+    plt.xlabel("Model")
+    plt.ylabel("Group")
+
+    # Legend formatting
+    handles, labels = ax.get_legend_handles_labels()
+    ax.legend(
+        handles, labels,
+        bbox_to_anchor=(1.02, 1), loc='upper left',
+        title="Δ Median & n_cells", frameon=True
+    )
+    plt.tight_layout()
+
+    # Save
+    fname = f"{dataset}_umap_delta_dotplot.png"
+    plt.savefig(os.path.join(out_dir, fname), dpi=300)
+    plt.close()
+
+# After the loop, concatenate and save all plot DataFrames as a single CSV
+final_df = pd.concat(all_dfs, axis=0)
+final_df.to_csv(os.path.join(out_dir, "umap_dotdata_ALL.csv"), index=False)
+
+print("✅ UMAP Δ median dotplots per dataset saved.")
+print("✅ Saved all UMAP dotplot dataframes as a single CSV.")
