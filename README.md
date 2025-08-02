@@ -108,17 +108,3 @@ The analysis generates:
 - **Performance Metrics**: Quantitative evaluation of model performance
 - **Visualizations**: High-quality plots for publication and presentation
 
-## Citation
-
-If you use this code in your research, please cite the relevant papers for the models used:
-- Geneformer: [Paper reference]
-- scGPT: [Paper reference]
-- Seurat v3: [Paper reference]
-
-## License
-
-[Add your license information here]
-
-## Contact
-
-[Add your contact information here] 
