@@ -3,10 +3,13 @@ This repository contains scripts for evaluating fairness in single-cell foundati
 
 ## Overview
 
-The project evaluates and compares three different approaches for scRNA-seq data analysis:
-- **Geneformer**: A transformer-based model for gene expression analysis
-- **scGPT**: A large language model specifically designed for single-cell data
-- **HVG (Highly Variable Genes)**: Traditional approach using highly variable genes for dimensionality reduction
+The analysis includes:
+
+-**Geneformer** – Transformer-based, rank-tokenised model pretrained on ~30M cells.
+
+-**scGPT** – Transformer-based, bin-tokenised model pretrained on ~33M cells.
+
+-**HVG Baseline** – Conventional PCA+UMAP pipeline using Seurat v3 highly variable gene selection.
 
 ## Datasets
 
@@ -106,5 +109,6 @@ The analysis generates:
 - **UMAP Coordinates**: 2D UMAP projections for visualization
 - **Performance Metrics**: Quantitative evaluation of model performance
 - **Visualizations**: High-quality plots for publication and presentation
+
 
 
