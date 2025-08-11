@@ -1,5 +1,5 @@
 # Fairness Evaluation of Single-Cell Foundation Models
-This repository contains scripts for evaluating fairness in single-cell foundation models. The project compares two transformer-based models—Geneformer and scGPT—with a conventional Highly Variable Gene (HVG) baseline across multiple immune-focused single-cell datasets. The study investigates whether these models encode or amplify bias across protected attributes (age, sex, ethnicity, disease status) and introduces a novel latent space fairness metric.
+This repository contains scripts for evaluating fairness in single-cell foundation models. The project compares two transformer-based models—Geneformer and scGPT—with a conventional Highly Variable Gene (HVG) baseline across multiple immune-focused single-cell datasets. The study investigates whether these models encode or amplify bias across protected attributes (age, sex, ethnicity, disease status) and introduces a novel latent space fairness metric. It isimportant to note that the scripts here are the basis of the project, however some intermediate scripts used during the development of this project have not been included to reduce clutter.
 
 ## Overview
 
@@ -109,6 +109,7 @@ The analysis generates:
 - **UMAP Coordinates**: 2D UMAP projections for visualization
 - **Performance Metrics**: Quantitative evaluation of model performance
 - **Visualizations**: High-quality plots for publication and presentation
+
 
 
 
